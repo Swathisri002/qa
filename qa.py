@@ -96,10 +96,19 @@ def main():
         st.write('Welcome to the Chatbot')
 
     elif option == 'Ask PDF':
+        if 'conversation' not in st.session_state:
+            st.session_state.conversation = []
+
         query = st.text_input('Enter your question for PDF:')
         if st.button('Ask'):
             response = process_ask_pdf(query)
-            st.write('PDF Response:', response)
+            st.session_state.conversation.append({"question": query, "answer": response})
+
+        if st.session_state.conversation:
+            st.write("### Conversation")
+            for chat in st.session_state.conversation:
+                st.write(f"**Question:** {chat['question']}")
+                st.write(f"**Answer:** {chat['answer']}")
 
     elif option == 'Upload PDF':
         st.write('Upload your PDF file(s) here:')
