@@ -108,8 +108,8 @@ def main():
         if st.session_state.conversation:
             st.write("### Conversation")
             for chat in st.session_state.conversation:
-                st.write(f"**Question : **{chat['question']}")
-                st.write(f"**Answer : **{chat['answer']}")
+                st.write(f"**Question:** {chat['question']}")
+                st.write(f"**Answer:** {chat['answer']}")
                 st.write("_____________________________________________________________________________________________________________________")
 
     elif option == 'Upload PDF':
