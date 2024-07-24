@@ -1,13 +1,11 @@
 streamlit
 nltk==3.6.3
-torch
 reportlab
-moviepy
 langchain
 langchain_groq
 langchain_community
 langchain_google_genai
-transformers
+transformers==4.18.0
 python-dotenv
 faiss-cpu
 pdfplumber
