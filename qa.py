@@ -1,4 +1,3 @@
-
 import os
 import streamlit as st
 import nltk
@@ -14,6 +13,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.chains import create_retrieval_chain
 from transformers import pipeline
+from dotenv import load_dotenv
 
 # Ensure NLTK package is downloaded
 nltk.download('punkt')
@@ -25,7 +25,6 @@ DB_FOLDER = "db"
 # Ensure directories exist
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(DB_FOLDER, exist_ok=True)
-# Load environment variables
 
 # Load models and setup
 folder_path = "db"
@@ -33,14 +32,16 @@ pdf_folder_path = "pdf"
 os.makedirs(folder_path, exist_ok=True)
 os.makedirs(pdf_folder_path, exist_ok=True)
 
-groq_api_key = st.secrets["secrets"]["GROQ_API_KEY"]
-google_api_key = st.secrets["secrets"]["GOOGLE_API_KEY"]
+# Load environment variables
+load_dotenv()
 
+groq_api_key = os.getenv("GROQ_API_KEY")
+google_api_key = os.getenv("GOOGLE_API_KEY")
 cached_llm = ChatGroq(groq_api_key=groq_api_key, model="Gemma-7b-It")
 embedding = GoogleGenerativeAIEmbeddings(api_key=google_api_key, model="models/embedding-001")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50, length_function=len)
 raw_prompt = PromptTemplate.from_template(""" 
-    <s>You are a technical assistant skilled at searching documents. Provide accurate answers using information present from the uploaded PDFs only. Search in the uploaded pdfs and give the best answer from it. If you do not have an answer from the provided information, say so. If the question is related to the words present in pdf you can also answer that.</s>
+    <s>You are a technical assistant skilled at searching documents. Provide accurate answers using information present from the uploaded PDFs only. Search in the uploaded pdfs and give the best answer from it. If you do not have an answer from the provided information, say so. If the question is related to the words present in pdf, like ISO or related content to the pdf you should answer that.</s>
     [INST] {input} 
             Context: {context}
             Answer: 
@@ -102,13 +103,14 @@ def main():
         query = st.text_input('Enter your question for PDF:')
         if st.button('Ask'):
             response = process_ask_pdf(query)
-            st.session_state.conversation.append({"question": query, "answer": response})
+            st.session_state.conversation.insert(0, {"question": query, "answer": response})
 
         if st.session_state.conversation:
             st.write("### Conversation")
             for chat in st.session_state.conversation:
-                st.write(f"**Question:** {chat['question']}")
-                st.write(f"**Answer:** {chat['answer']}")
+                st.write(f"**Question : ** {chat['question']}")
+                st.write(f"**Answer : ** {chat['answer']}")
+                st.write("_____________________________________________________________________________________________________________________")
 
     elif option == 'Upload PDF':
         st.write('Upload your PDF file(s) here:')
