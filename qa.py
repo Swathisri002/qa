@@ -1,8 +1,7 @@
-import io
+
 import os
 import streamlit as st
 import nltk
-import torch
 from reportlab.lib.pagesizes import letter
 from reportlab.platypus import SimpleDocTemplate, Paragraph
 from reportlab.lib.styles import getSampleStyleSheet
