@@ -5,7 +5,8 @@ langchain
 langchain_groq
 langchain_community
 langchain_google_genai
-transformers==4.18.0
+transformers
 python-dotenv
 faiss-cpu
 pdfplumber
+tokenizers
