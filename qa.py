@@ -47,7 +47,8 @@ raw_prompt = PromptTemplate.from_template("""
         - If the exact information is not directly available, make reasonable inferences based on related content or synonymous terms.
         - Treat similar or related questions as synonymous (e.g., "applying for ISO" and "applying for ISO certification").
         - Your answers should be clear and concise, without any unnecessary formatting like newlines.
-        - If no information is available, clearly state that the information is not available in the provided context.
+        - You should understand the content of the pdf and answer the questions correctly. Answers must be present in the pdf.
+        - If the question is more general, behave like a chatbot (e.g., "Hi", "Hello", "How are you").
     </s>
     [INST] {input} 
             Context: {context}
@@ -61,7 +62,7 @@ def process_ask_pdf(query):
         return "Error: FAISS index file does not exist. Please upload PDF files first to create the index."
     
     vector_store = FAISS.load_local(folder_path, embedding, allow_dangerous_deserialization=True)
-    retriever = vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5, "score_threshold": 0.2})
+    retriever = vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5, "score_threshold": 0.1})  # Lowered the threshold
     document_chain = create_stuff_documents_chain(cached_llm, raw_prompt)
     chain = create_retrieval_chain(retriever, document_chain)
     result = chain.invoke({"input": query})
@@ -90,7 +91,7 @@ def process_ask(question):
         return "Error: FAISS index file does not exist. Please upload PDF files first to create the index."
     
     vector_store = FAISS.load_local(folder_path, embedding, allow_dangerous_deserialization=True)
-    retriever = vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5, "score_threshold": 0.2})
+    retriever = vector_store.as_retriever(search_type="similarity_score_threshold", search_kwargs={"k": 5, "score_threshold": 0.1})  # Lowered the threshold
     document_chain = create_stuff_documents_chain(cached_llm, raw_prompt)
     chain = create_retrieval_chain(retriever, document_chain)
     result = chain.invoke({"input": question})
@@ -107,10 +108,16 @@ def main():
         if 'conversation' not in st.session_state:
             st.session_state.conversation = []
 
-        query = st.text_input('Enter your question for PDF:')
-        if st.button('Ask'):
-            response = process_ask_pdf(query)
-            st.session_state.conversation.insert(0, {"question": query, "answer": response})
+        if 'query' not in st.session_state:
+            st.session_state.query = ""
+
+        query = st.text_input('Enter your question for PDF:', value=st.session_state.query, key='query_input', on_change=lambda: st.session_state.update(query=st.session_state.query_input))
+
+        if st.button('Ask') or query:
+            response = process_ask_pdf(st.session_state.query)
+            st.session_state.conversation.insert(0, {"question": st.session_state.query, "answer": response})
+            st.session_state.query = ""  # Clear the input field
+            st.query_params.clear()  # Refresh the page with empty query param
 
         if st.session_state.conversation:
             st.write("### Conversation")
