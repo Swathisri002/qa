@@ -40,17 +40,21 @@ google_api_key = os.getenv("GOOGLE_API_KEY")
 cached_llm = ChatGroq(groq_api_key=groq_api_key, model="Gemma-7b-It")
 embedding = GoogleGenerativeAIEmbeddings(api_key=google_api_key, model="models/embedding-001")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50, length_function=len)
+
 raw_prompt = PromptTemplate.from_template(""" 
     <s>
-        You are a highly knowledgeable technical assistant skilled at extracting and analyzing information from documents. Your primary task is to provide accurate answers using information present in the uploaded PDFs. If the information is not directly available, make reasonable inferences based on related content.
-        Your answers should be clear and concise, without any unnecessary formatting like newlines.
-        For questions related to specific topics like ISO, including application procedures, eligibility criteria, or similar topics, you should provide the best possible answer using any related context. If the context is completely lacking, clearly state that the information is not available.
+        You are a highly knowledgeable technical assistant skilled at extracting and analyzing information from documents. Your primary task is to provide accurate answers using information present in the uploaded PDFs. 
+        - If the exact information is not directly available, make reasonable inferences based on related content or synonymous terms.
+        - Treat similar or related questions as synonymous (e.g., "applying for ISO" and "applying for ISO certification").
+        - Your answers should be clear and concise, without any unnecessary formatting like newlines.
+        - If no information is available, clearly state that the information is not available in the provided context.
     </s>
     [INST] {input} 
             Context: {context}
             Answer: 
     [/INST]
 """)
+
 def process_ask_pdf(query):
     index_path = os.path.join(folder_path, "index.faiss")
     if not os.path.exists(index_path):
