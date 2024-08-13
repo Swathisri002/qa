@@ -41,13 +41,16 @@ cached_llm = ChatGroq(groq_api_key=groq_api_key, model="Gemma-7b-It")
 embedding = GoogleGenerativeAIEmbeddings(api_key=google_api_key, model="models/embedding-001")
 text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=50, length_function=len)
 raw_prompt = PromptTemplate.from_template(""" 
-    <s>You are a technical assistant skilled at searching documents. Provide accurate answers using information present from the uploaded PDFs only. Search in the uploaded pdfs and give the best answer from it. If you do not have an answer from the provided information, say so. If the question is related to the words present in pdf, like ISO or related content you should answer that.</s>
+    <s>
+        You are a highly knowledgeable technical assistant skilled at extracting and analyzing information from documents. Your primary task is to provide accurate answers using information present in the uploaded PDFs. If the information is not directly available, make reasonable inferences based on related content.
+        Your answers should be clear and concise, without any unnecessary formatting like newlines.
+        For questions related to specific topics like ISO, including application procedures, eligibility criteria, or similar topics, you should provide the best possible answer using any related context. If the context is completely lacking, clearly state that the information is not available.
+    </s>
     [INST] {input} 
             Context: {context}
             Answer: 
     [/INST]
 """)
-
 def process_ask_pdf(query):
     index_path = os.path.join(folder_path, "index.faiss")
     if not os.path.exists(index_path):
